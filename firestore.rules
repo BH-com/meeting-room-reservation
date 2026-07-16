@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 로그인 없이 사용하는 소규모 내부 시스템용 규칙입니다.
+    // 예약은 누구나 조회·등록·삭제할 수 있습니다.
+    match /reservations/{reservationId} {
+      allow read: if true;
+      allow create: if
+        request.resource.data.keys().hasAll([
+          'room', 'dateKey', 'startMinutes', 'endMinutes', 'userName', 'title'
+        ]) &&
+        request.resource.data.room in ['회의실1', '회의실2', '회의실3'] &&
+        request.resource.data.userName is string &&
+        request.resource.data.userName.size() > 0 &&
+        request.resource.data.userName.size() <= 20 &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 60 &&
+        request.resource.data.startMinutes is int &&
+        request.resource.data.endMinutes is int &&
+        request.resource.data.startMinutes >= 0 &&
+        request.resource.data.endMinutes <= 1440 &&
+        request.resource.data.startMinutes < request.resource.data.endMinutes;
+      allow update: if false;
+      allow delete: if true;
+    }
+
+    // 삭제 로그는 누구나 읽고 새로 기록할 수 있지만 수정·삭제는 할 수 없습니다.
+    match /reservation_logs/{logId} {
+      allow read: if true;
+      allow create: if
+        request.resource.data.action == 'DELETE' &&
+        request.resource.data.deletedBy is string &&
+        request.resource.data.deletedBy.size() > 0;
+      allow update, delete: if false;
+    }
+  }
+}

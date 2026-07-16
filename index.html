@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f6f7fb" />
+  <title>회의실 예약</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>회의실 예약</h1>
+        <p class="subtitle">빈 칸을 눌러 빠르게 예약하세요.</p>
+      </div>
+      <div class="user-area">
+        <span id="currentUserText">사용자 미설정</span>
+        <button id="changeNameBtn" class="btn btn-ghost" type="button">이름 변경</button>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="예약표 도구">
+      <div class="date-controls">
+        <button id="prevDayBtn" class="icon-btn" type="button" aria-label="이전 날짜">‹</button>
+        <button id="dateTitleBtn" class="date-title" type="button"></button>
+        <button id="nextDayBtn" class="icon-btn" type="button" aria-label="다음 날짜">›</button>
+        <button id="todayBtn" class="btn btn-secondary" type="button">오늘</button>
+      </div>
+      <div class="view-controls">
+        <button id="myReservationsBtn" class="btn btn-secondary" type="button">내 예약</button>
+        <button id="logsBtn" class="btn btn-secondary" type="button">삭제 내역</button>
+        <button id="toggleHoursBtn" class="btn btn-primary" type="button">24시간 보기</button>
+      </div>
+    </section>
+
+    <main>
+      <div class="legend" aria-label="색상 안내">
+        <span><i class="legend-box regular"></i> 일반시간 09:00~18:00</span>
+        <span><i class="legend-box extended"></i> 확장시간 08:00~09:00 · 18:00~20:00</span>
+        <span><i class="legend-box my"></i> 내 예약</span>
+      </div>
+
+      <div class="schedule-wrap">
+        <div id="scheduleGrid" class="schedule-grid" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+    <section id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 id="modalTitle">예약</h2>
+        <button id="modalCloseBtn" class="icon-btn" type="button" aria-label="닫기">×</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
