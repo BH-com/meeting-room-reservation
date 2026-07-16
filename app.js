@@ -32,7 +32,7 @@ const db = getFirestore(app);
 const state = {
   selectedDate: startOfDay(new Date()),
   fullDay: false,
-  viewMode: "day",
+  viewMode: "month",
   reservations: [],
   monthReservations: [],
   userName: localStorage.getItem(STORAGE_USER_KEY) || ""
@@ -578,7 +578,7 @@ els.modalBackdrop.addEventListener("click", (event) => { if (event.target === el
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeModal(); });
 
 updateUserUI();
-renderSchedule();
-subscribeReservations();
+renderMonth();
+subscribeMonthReservations();
 if (!state.userName) promptForName();
 window.setInterval(() => state.viewMode === "month" ? renderMonth() : renderSchedule(), 60 * 1000);
