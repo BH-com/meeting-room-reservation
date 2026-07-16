@@ -180,6 +180,7 @@ function getSlotClass(minute) {
   return "night-hours";
 }
 
+
 function renderSchedule() {
   updateUserUI();
   els.dateTitleBtn.textContent = formatDateTitle(state.selectedDate);
@@ -196,7 +197,10 @@ function renderSchedule() {
       );
       const isStart = reservation?.startMinutes === minute;
       const classes = ["grid-cell", "slot", getSlotClass(minute)];
-      if (reservation) classes.push("occupied");
+      if (reservation) {
+        classes.push("occupied");
+        classes.push(reservation.userName === state.userName ? "occupied-mine" : "occupied-other");
+      }
       if (reservation && !isStart) classes.push("continuation");
 
       let content = "";
@@ -444,3 +448,4 @@ updateUserUI();
 renderSchedule();
 subscribeReservations();
 if (!state.userName) promptForName();
+window.setInterval(() => renderSchedule(), 60 * 1000);

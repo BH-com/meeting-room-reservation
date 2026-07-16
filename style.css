@@ -86,22 +86,6 @@ h1 { margin: 0; font-size: 28px; letter-spacing: -0.04em; }
   font-weight: 750;
   background: #f9fafb;
 }
-.room-header { flex-direction: column; gap: 5px; padding: 7px 5px; }
-.room-name { line-height: 1.1; }
-.room-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.status-free { color: #067647; background: #ecfdf3; border: 1px solid #abefc6; }
-.status-busy { color: #b42318; background: #fef3f2; border: 1px solid #fecdca; }
-.status-other-day { color: #475467; background: #f2f4f7; border: 1px solid #e4e7ec; }
 .time-cell { display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; font-size: 12px; color: var(--muted); background: #fafbfc; }
 .slot { position: relative; padding: 5px; transition: background .12s ease; }
 .slot.regular-hours { background: var(--regular); }
