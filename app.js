@@ -32,7 +32,9 @@ const db = getFirestore(app);
 const state = {
   selectedDate: startOfDay(new Date()),
   fullDay: false,
+  viewMode: "day",
   reservations: [],
+  monthReservations: [],
   userName: localStorage.getItem(STORAGE_USER_KEY) || ""
 };
 
@@ -44,9 +46,13 @@ const els = {
   todayBtn: document.getElementById("todayBtn"),
   dateTitleBtn: document.getElementById("dateTitleBtn"),
   toggleHoursBtn: document.getElementById("toggleHoursBtn"),
+  monthViewBtn: document.getElementById("monthViewBtn"),
   myReservationsBtn: document.getElementById("myReservationsBtn"),
   logsBtn: document.getElementById("logsBtn"),
+  scheduleWrap: document.getElementById("scheduleWrap"),
   scheduleGrid: document.getElementById("scheduleGrid"),
+  monthWrap: document.getElementById("monthWrap"),
+  monthGrid: document.getElementById("monthGrid"),
   modalBackdrop: document.getElementById("modalBackdrop"),
   modalTitle: document.getElementById("modalTitle"),
   modalBody: document.getElementById("modalBody"),
@@ -64,6 +70,25 @@ function addDays(date, amount) {
   const d = new Date(date);
   d.setDate(d.getDate() + amount);
   return startOfDay(d);
+}
+
+function addMonths(date, amount) {
+  const d = new Date(date);
+  d.setDate(1);
+  d.setMonth(d.getMonth() + amount);
+  return startOfDay(d);
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function endOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+function formatMonthTitle(date) {
+  return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long" }).format(date);
 }
 
 function formatDateKey(date) {
@@ -183,6 +208,10 @@ function getSlotClass(minute) {
 
 function renderSchedule() {
   updateUserUI();
+  els.monthViewBtn.textContent = "월간 보기";
+  els.toggleHoursBtn.classList.remove("hidden");
+  els.monthWrap.classList.add("hidden");
+  els.scheduleWrap.classList.remove("hidden");
   els.dateTitleBtn.textContent = formatDateTitle(state.selectedDate);
   els.toggleHoursBtn.textContent = state.fullDay ? "기본시간 보기" : "24시간 보기";
   const [startMinute, endMinute] = getVisibleRange();
@@ -220,6 +249,89 @@ function renderSchedule() {
     }
   }
   els.scheduleGrid.innerHTML = html;
+}
+
+
+function renderMonth() {
+  updateUserUI();
+  els.dateTitleBtn.textContent = formatMonthTitle(state.selectedDate);
+  els.monthViewBtn.textContent = "일간 보기";
+  els.toggleHoursBtn.classList.add("hidden");
+  els.scheduleWrap.classList.add("hidden");
+  els.monthWrap.classList.remove("hidden");
+
+  const monthStart = startOfMonth(state.selectedDate);
+  const monthEnd = endOfMonth(state.selectedDate);
+  const firstCell = addDays(monthStart, -monthStart.getDay());
+  const todayKey = formatDateKey(new Date());
+  const selectedKey = formatDateKey(state.selectedDate);
+  const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
+
+  let html = weekNames.map((name, index) =>
+    `<div class="month-weekday ${index === 0 ? "sun" : index === 6 ? "sat" : ""}">${name}</div>`
+  ).join("");
+
+  for (let i = 0; i < 42; i++) {
+    const date = addDays(firstCell, i);
+    const dateKey = formatDateKey(date);
+    const inMonth = date.getMonth() === monthStart.getMonth();
+    const dayItems = state.monthReservations
+      .filter(item => item.dateKey === dateKey)
+      .sort((a, b) => a.startMinutes - b.startMinutes || a.room.localeCompare(b.room));
+    const visibleItems = dayItems.slice(0, 4);
+    const moreCount = dayItems.length - visibleItems.length;
+    const classes = ["month-day"];
+    if (!inMonth) classes.push("outside-month");
+    if (dateKey === todayKey) classes.push("today");
+    if (dateKey === selectedKey) classes.push("selected");
+    if (date.getDay() === 0) classes.push("sunday");
+    if (date.getDay() === 6) classes.push("saturday");
+
+    html += `<button type="button" class="${classes.join(" ")}" data-date-key="${dateKey}">
+      <span class="month-date-number">${date.getDate()}</span>
+      <span class="month-reservations">
+        ${visibleItems.map(item => `
+          <span class="month-reservation room-${ROOMS.indexOf(item.room) + 1}">
+            <strong>${minutesToTime(item.startMinutes)}</strong>
+            <span>${escapeHtml(item.room)} · ${escapeHtml(item.userName)}</span>
+          </span>`).join("")}
+        ${moreCount > 0 ? `<span class="month-more">+${moreCount}건</span>` : ""}
+      </span>
+    </button>`;
+  }
+  els.monthGrid.innerHTML = html;
+}
+
+function showDayView() {
+  state.viewMode = "day";
+  els.monthViewBtn.textContent = "월간 보기";
+  els.toggleHoursBtn.classList.remove("hidden");
+  els.monthWrap.classList.add("hidden");
+  els.scheduleWrap.classList.remove("hidden");
+  subscribeReservations();
+}
+
+function showMonthView() {
+  state.viewMode = "month";
+  subscribeMonthReservations();
+}
+
+function subscribeMonthReservations() {
+  const startKey = formatDateKey(startOfMonth(state.selectedDate));
+  const endKey = formatDateKey(endOfMonth(state.selectedDate));
+  const q = query(
+    collection(db, "reservations"),
+    where("dateKey", ">=", startKey),
+    where("dateKey", "<=", endKey)
+  );
+  if (subscribeMonthReservations.unsubscribe) subscribeMonthReservations.unsubscribe();
+  subscribeMonthReservations.unsubscribe = onSnapshot(q, (snapshot) => {
+    state.monthReservations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderMonth();
+  }, (error) => {
+    console.error(error);
+    showToast("월간 예약 정보를 불러오지 못했습니다.");
+  });
 }
 
 function subscribeReservations() {
@@ -436,13 +548,31 @@ els.scheduleGrid.addEventListener("click", (event) => {
   openReservationForm(slot.dataset.room, Number(slot.dataset.minute));
 });
 
-els.prevDayBtn.onclick = () => { state.selectedDate = addDays(state.selectedDate, -1); subscribeReservations(); };
-els.nextDayBtn.onclick = () => { state.selectedDate = addDays(state.selectedDate, 1); subscribeReservations(); };
-els.todayBtn.onclick = () => { state.selectedDate = startOfDay(new Date()); subscribeReservations(); };
+els.prevDayBtn.onclick = () => {
+  state.selectedDate = state.viewMode === "month" ? addMonths(state.selectedDate, -1) : addDays(state.selectedDate, -1);
+  state.viewMode === "month" ? subscribeMonthReservations() : subscribeReservations();
+};
+els.nextDayBtn.onclick = () => {
+  state.selectedDate = state.viewMode === "month" ? addMonths(state.selectedDate, 1) : addDays(state.selectedDate, 1);
+  state.viewMode === "month" ? subscribeMonthReservations() : subscribeReservations();
+};
+els.todayBtn.onclick = () => {
+  state.selectedDate = startOfDay(new Date());
+  state.viewMode === "month" ? subscribeMonthReservations() : subscribeReservations();
+};
 els.toggleHoursBtn.onclick = () => { state.fullDay = !state.fullDay; renderSchedule(); };
+els.monthViewBtn.onclick = () => { state.viewMode === "month" ? showDayView() : showMonthView(); };
+els.dateTitleBtn.onclick = () => { if (state.viewMode === "day") showMonthView(); };
 els.changeNameBtn.onclick = () => promptForName(true);
 els.myReservationsBtn.onclick = openMyReservations;
 els.logsBtn.onclick = openDeleteLogs;
+els.monthGrid.addEventListener("click", (event) => {
+  const day = event.target.closest("[data-date-key]");
+  if (!day) return;
+  state.selectedDate = startOfDay(new Date(`${day.dataset.dateKey}T00:00:00`));
+  showDayView();
+});
+
 els.modalCloseBtn.onclick = closeModal;
 els.modalBackdrop.addEventListener("click", (event) => { if (event.target === els.modalBackdrop) closeModal(); });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeModal(); });
@@ -451,4 +581,4 @@ updateUserUI();
 renderSchedule();
 subscribeReservations();
 if (!state.userName) promptForName();
-window.setInterval(() => renderSchedule(), 60 * 1000);
+window.setInterval(() => state.viewMode === "month" ? renderMonth() : renderSchedule(), 60 * 1000);

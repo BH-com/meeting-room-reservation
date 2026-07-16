@@ -167,3 +167,84 @@ h1 { margin: 0; font-size: 28px; letter-spacing: -0.04em; }
 }
 .slot.occupied .reservation-card.mine.reservation-start { border-top-color: #e6c84d; }
 .slot.occupied.continuation .reservation-card { margin-top: -5px; min-height: 57px; }
+
+/* v1.2.0: 월간 달력 */
+.month-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(31, 41, 55, 0.05);
+}
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(130px, 1fr));
+  min-width: 940px;
+}
+.month-weekday {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  background: #f9fafb;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.month-weekday:nth-child(7) { border-right: 0; }
+.month-weekday.sun { color: #d92d20; }
+.month-weekday.sat { color: #315efb; }
+.month-day {
+  position: relative;
+  min-height: 150px;
+  padding: 10px;
+  text-align: left;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  overflow: hidden;
+}
+.month-day:nth-child(7n) { border-right: 0; }
+.month-day:hover { background: #f8faff; }
+.month-day.outside-month { background: #fafafa; color: #98a2b3; }
+.month-day.today { background: #eef4ff; }
+.month-day.selected { box-shadow: inset 0 0 0 2px var(--primary); }
+.month-date-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+}
+.month-day.today .month-date-number { background: var(--primary); color: #fff; }
+.month-day.sunday:not(.today) .month-date-number { color: #d92d20; }
+.month-day.saturday:not(.today) .month-date-number { color: #315efb; }
+.month-reservations { display: grid; gap: 5px; margin-top: 7px; }
+.month-reservation {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 5px;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1.2;
+  background: #edf3ff;
+  border-left: 3px solid #315efb;
+}
+.month-reservation.room-2 { background: #ecfdf3; border-left-color: #12b76a; }
+.month-reservation.room-3 { background: #fff6ed; border-left-color: #f79009; }
+.month-reservation strong { font-size: 10px; }
+.month-reservation span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.month-more { color: var(--muted); font-size: 10px; font-weight: 700; padding-left: 4px; }
+@media (max-width: 760px) {
+  .month-wrap { overflow-x: auto; }
+  .month-day { min-height: 125px; }
+}
