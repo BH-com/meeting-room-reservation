@@ -204,13 +204,16 @@ function renderSchedule() {
       if (reservation && !isStart) classes.push("continuation");
 
       let content = "";
-      if (reservation && isStart) {
+      if (reservation) {
         const mine = reservation.userName === state.userName ? " mine" : "";
+        const segment = isStart ? " reservation-start" : " reservation-continuation";
         content = `
-          <div class="reservation-card${mine}" data-reservation-id="${reservation.id}">
-            <span class="reservation-name">${escapeHtml(reservation.userName)}</span>
-            <span class="reservation-title">${escapeHtml(reservation.title || "회의실 사용")}</span>
-            <span class="reservation-time">${minutesToTime(reservation.startMinutes)}~${minutesToTime(reservation.endMinutes)}</span>
+          <div class="reservation-card${mine}${segment}" data-reservation-id="${reservation.id}">
+            ${isStart ? `
+              <span class="reservation-name">${escapeHtml(reservation.userName)}</span>
+              <span class="reservation-title">${escapeHtml(reservation.title || "회의실 사용")}</span>
+              <span class="reservation-time">${minutesToTime(reservation.startMinutes)}~${minutesToTime(reservation.endMinutes)}</span>
+            ` : ""}
           </div>`;
       }
       html += `<div class="${classes.join(" ")}" data-room="${room}" data-minute="${minute}" ${reservation ? `data-reservation-id="${reservation.id}"` : ""}>${content}</div>`;
