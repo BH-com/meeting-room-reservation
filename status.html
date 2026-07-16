@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>회의실 이용현황 모니터</title>
+  <link rel="stylesheet" href="./status.css" />
+</head>
+<body>
+  <div class="display-shell">
+    <header class="display-header">
+      <div>
+        <h1 id="displayTitle">회의실 이용현황</h1>
+        <p id="displaySubtitle">실시간으로 현재 이용 상태를 표시합니다.</p>
+      </div>
+      <div class="clock-wrap">
+        <div id="clockTime" class="clock-time"></div>
+        <div id="clockDate" class="clock-date"></div>
+      </div>
+    </header>
+
+    <main>
+      <section id="allRoomsView" class="room-monitor-grid"></section>
+      <section id="singleRoomView" class="single-room-view hidden"></section>
+    </main>
+  </div>
+
+  <script type="module" src="./status.js"></script>
+</body>
+</html>
